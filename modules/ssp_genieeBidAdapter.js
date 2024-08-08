@@ -8,7 +8,7 @@ import { MODULE_TYPE_ANALYTICS } from '../src/activities/modules.js'
 const BIDDER_CODE = 'ssp_geniee';
 export const BANNER_ENDPOINT = 'https://aladdin.genieesspv.jp/yie/ld/api/ad_call/v2';
 // export const ENDPOINT_USERSYNC = '';
-const SUPPORTED_MEDIA_TYPES = BANNER;
+const SUPPORTED_MEDIA_TYPES = [ BANNER ];
 const DEFAULT_CURRENCY = 'JPY';
 const ALLOWED_CURRENCIES = ['USD', 'JPY'];
 const NET_REVENUE = true;
