@@ -375,17 +375,6 @@ export const spec = {
         return false;
       }
     }
-
-    if (bidRequest.params.hasOwnProperty('native') && !bidRequest.params.native) return false;
-    if (bidRequest.params?.native) {
-      if (!bidRequest.params.native.itemFormat) return false;
-      if (typeof bidRequest.params.native.nativePostReplace !== 'string') {
-        return false;
-      }
-    }
-    if (bidRequest.mediaTypes?.native) {
-      if (!bidRequest.mediaTypes.native.ortb || !bidRequest.mediaTypes.native.ortb.assets) return false;
-    }
     return true;
   },
   /**
@@ -401,7 +390,7 @@ export const spec = {
 
     validBidRequests.forEach((bid) => {
       // const isNative = bid.mediaTypes?.native;
-      const geparameter = bid.params?.geparams || {};
+      const geparameter = bid.params.geparams || {};
 
       serverRequests.push({
         method: 'GET',
