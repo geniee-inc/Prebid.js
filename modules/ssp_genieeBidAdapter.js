@@ -1,15 +1,14 @@
 /* eslint-disable camelcase */
 import * as utils from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
-import { BANNER, NATIVE } from '../src/mediaTypes.js';
+import { BANNER } from '../src/mediaTypes.js';
 import { getStorageManager } from '../src/storageManager.js';
 import { MODULE_TYPE_ANALYTICS } from '../src/activities/modules.js'
 
 const BIDDER_CODE = 'ssp_geniee';
 export const BANNER_ENDPOINT = 'https://aladdin.genieesspv.jp/yie/ld/api/ad_call/v2';
-export const NATIVE_ENDPOINT = 'https://aladdin.genieesspv.jp/yie/ld/nad';
 // export const ENDPOINT_USERSYNC = '';
-const SUPPORTED_MEDIA_TYPES = [BANNER, NATIVE];
+const SUPPORTED_MEDIA_TYPES = BANNER;
 const DEFAULT_CURRENCY = 'JPY';
 const ALLOWED_CURRENCIES = ['USD', 'JPY'];
 const NET_REVENUE = true;
@@ -254,35 +253,6 @@ function makeBannerRequestData(bid, geparameter, refererInfo) {
   return data;
 }
 
-function toCallbackName(zoneId) {
-  return 'gnnative_' + zoneId + '_callback';
-}
-
-function toNativeObjectName(zoneId) {
-  return 'gnnative_' + zoneId;
-}
-
-/**
- * making request data for native
- */
-function makeNativeRequestData(bid, geparameter, refererInfo) {
-  const data = makeCommonRequestData(bid, geparameter, refererInfo);
-
-  data.callback = toCallbackName(data.zoneid);
-  if (geparameter.gfuid && geparameter.gfuid != '') {
-    data.gfuid = encodeURIComponentIncludeSingleQuotation(geparameter.gfuid);
-  }
-  if (geparameter.adt && geparameter.adt != '') {
-    data.adt = encodeURIComponentIncludeSingleQuotation(geparameter.adt);
-  }
-
-  data.apiv = bid.params.native.apiv || '1.0.0';
-  data.tkf = bid.params.native.tkf || 0;
-  data.ad_track = '1';
-
-  return data;
-}
-
 /**
  * making bid response be used commonly banner and native
  */
@@ -322,57 +292,6 @@ function makeBannerBidResponse(bid, request) {
 }
 
 /**
- * making bid response for native
- */
-function makeNativeBidResponse(bid, request, serverResponseBody) {
-  let width;
-  let height;
-  request.bid.mediaTypes.native.ortb.assets.forEach((asset) => {
-    if (asset.img) {
-      width = asset.img.w;
-      height = asset.img.h;
-    }
-  });
-  const bidResponse = makeCommonBidResponse(
-    bid,
-    width,
-    height
-  );
-
-  let bidResponseAd = "<script type='text/javascript'>";
-  bidResponseAd += 'window.parent.' + toNativeObjectName(request.bid.params.zoneId) + '.targetWindow=window;';
-  bidResponseAd += 'window.parent.' + serverResponseBody;
-  bidResponseAd += '</'.concat('script>');
-
-  bidResponse.ad = makeBidResponseAd(bidResponseAd);
-  bidResponse.mediaType = NATIVE;
-  bidResponse.native = {
-    title: bid.title,
-    body: bid.description,
-    cta: bid.cta || 'click here',
-    sponsoredBy: bid.advertiser || 'geniee',
-    clickUrl: encodeURIComponentIncludeSingleQuotation(bid.landingURL),
-    impressionTrackers: bid.trackings,
-  };
-  if (bid.screenshots) {
-    bidResponse.native.image = {
-      url: bid.screenshots.url,
-      height: bid.screenshots.height,
-      width: bid.screenshots.width,
-    };
-  }
-  if (bid.icon) {
-    bidResponse.native.icon = {
-      url: bid.icon.url,
-      height: bid.icon.height,
-      width: bid.icon.width,
-    };
-  }
-
-  return bidResponse;
-}
-
-/**
  * making change height event markup for af iframe. About passback ad, it is possible that ad image is cut off. To handle this, we add this event to change height after ad is loaded.
  */
 function makeChangeHeightEventMarkup(request) {
@@ -388,232 +307,6 @@ function makeChangeHeightEventMarkup(request) {
  */
 function makeBidResponseAd(innerHTML) {
   return '<body marginwidth="0" marginheight="0">' + innerHTML + '</body>';
-}
-
-/**
- * definition of window object for native ad.
- * 1. define object and callback function in current window
- * 2. convert Aladdin ad response and write it to iframe
- * 3. call callback function in current window (=parent window of iframe) from iframe
- * 4. operate window and document in iframe from current window
- * The way to set targetWindow is unnecessarily complicated because of the above.
- * Note: If targetWindow.document is assigned to a variable, the ad will not be displayed in Firefox. It will not be displayed even if the argument is changed from window to document.
- * @param {object} bidParams
- */
-function defineGnnativeWindow(bidParams) {
-  window[toNativeObjectName(bidParams.zoneId)] = {
-    targetWindow: null,
-    itemFormat: bidParams?.native.itemFormat,
-    zoneid: bidParams.zoneId,
-    write_native_ad: function (nad) {
-      if (!this.targetWindow) return false;
-      let gnnative_id_$REPLACE_$zoneId$;
-      if (nad && nad.third_tag && nad.trackings) {
-        gnnative_id_$REPLACE_$zoneId$ = Math.floor(Math.random() * 99999);
-        this.targetWindow.document.write(
-          '<div id ="gnnative_ad' + gnnative_id_$REPLACE_$zoneId$ + '" style="display:none;"></div>'
-        );
-        this.targetWindow.document.write(nad.third_tag);
-        for (let i = 0, len = nad.trackings.length; i < len; i++) {
-          this.targetWindow.document.write(nad.trackings[i]);
-        }
-      } else if (nad && (nad.trackings || nad.isnative == 1)) {
-        let item = this.itemFormat;
-        item = this.changeOptoutText(item, nad);
-        item =
-          nad.icon && nad.icon.url
-            ? item.replace(/{icon-url}/g, nad.icon.url)
-            : item.replace(/{icon-url}/g, '');
-        item =
-          nad.icon && nad.icon.largeURL
-            ? item.replace(/{icon-large-url}/g, nad.icon.largeURL)
-            : item.replace(/{icon-large-url}/g, '');
-        item = nad.landingURL
-          ? item.replace(/{landing-url}/g, nad.landingURL)
-          : item.replace(/{landing-url}/g, '');
-        item = nad.title
-          ? item.replace(/{title}/g, nad.title)
-          : item.replace(/{title}/g, '');
-        item = nad.advertiser
-          ? item.replace(/{advertiser}/g, nad.advertiser)
-          : item.replace(/{advertiser}/g, '');
-        if (nad.optout) {
-          item = nad.optout.text
-            ? item.replace(/{optout-text}/g, nad.optout.text)
-            : item.replace(/{optout-text}/g, '');
-          item = nad.optout.url
-            ? item.replace(/{optout-url}/g, nad.optout.url)
-            : item.replace(/{optout-url}/g, '');
-          item = nad.optout.image_url
-            ? item.replace(/{optout-image-url}/g, nad.optout.image_url)
-            : item.replace(/{optout-image-url}/g, '');
-        }
-        item = nad.description
-          ? item.replace(/{description}/g, nad.description)
-          : item.replace(/{description}/g, '');
-        item = nad.cta
-          ? item.replace(/{cta}/g, nad.cta)
-          : item.replace(/{cta}/g, '');
-        item =
-          nad.app && nad.app.appName
-            ? item.replace(/{app-name}/g, nad.app.appName)
-            : item.replace(/{app-name}/g, '');
-        item =
-          nad.app && nad.app.targetAge
-            ? item.replace(/{target-age}/g, nad.app.targetAge)
-            : item.replace(/{target-age}/g, '');
-        item =
-          nad.app && nad.app.rating
-            ? item.replace(/{rating}/g, nad.app.rating)
-            : item.replace(/{rating}/g, '');
-        if (nad.screenshots) {
-          item = nad.screenshots.url
-            ? item.replace(/{screenshots-url}/g, nad.screenshots.url)
-            : item.replace(/{screenshots-url}/g, '');
-          item = nad.screenshots.width
-            ? item.replace(/{screenshots-width}/g, nad.screenshots.width)
-            : item.replace(/{screenshots-width}/g, '');
-          item = nad.screenshots.height
-            ? item.replace(/{screenshots-height}/g, nad.screenshots.height)
-            : item.replace(/{screenshots-height}/g, '');
-        }
-        const ret = this.postReplace(item);
-        item = ret || item;
-        if (typeof gnnative_id_$REPLACE_$zoneId$ === 'undefined') {
-          gnnative_id_$REPLACE_$zoneId$ = Math.floor(Math.random() * 99999);
-          this.targetWindow.document.write(
-            '<div id ="gnnative_ad' + gnnative_id_$REPLACE_$zoneId$ + '" style="display:none;"></div>'
-          );
-        }
-        const tmpNode = this.targetWindow.document.getElementById(
-          'gnnative_ad' + gnnative_id_$REPLACE_$zoneId$
-        );
-        tmpNode.innerHTML = item;
-        if (nad.clicktrackers && nad.clicktrackers.length) {
-          const linkElements = tmpNode.getElementsByTagName('a');
-          for (let count = 0; count < linkElements.length; count++) {
-            const linkElement = linkElements[count];
-            if (linkElement.getAttribute('href') === nad.landingURL) {
-              this.addEvent(linkElement, 'click', function () {
-                let ctTagText = '';
-                for (let ctIdx = 0; ctIdx < nad.clicktrackers.length; ctIdx++) {
-                  ctTagText += nad.clicktrackers[ctIdx];
-                }
-                if (ctTagText.length > 0) {
-                  const divTag =
-                    this.targetWindow.document.createElement('div');
-                  divTag.style.cssText = 'visibility:hidden;position:absolute;width:0px!important;height:0px!important;';
-                  divTag.innerHTML = ctTagText;
-                  linkElement.appendChild(divTag);
-                }
-                return true;
-              });
-            }
-          }
-        }
-        while (tmpNode.firstChild) {
-          tmpNode.parentNode.insertBefore(tmpNode.firstChild, tmpNode);
-        }
-        tmpNode.parentNode.removeChild(tmpNode);
-        for (let i = 0, len = nad.trackings.length; i < len; i++) {
-          // add div and image tag
-          this.targetWindow.document.write(
-            '<div style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="' + nad.trackings[i] + '" width="0" height="0" alt="" style="width: 0px; height: 0px;">'
-          );
-        }
-      } else {
-        return false;
-      }
-    },
-    write_native_video_ad: function (nad) {
-      if (!this.targetWindow) return false;
-      const targetWindow = this.targetWindow;
-      let gnnative_id_$REPLACE_$zoneId$;
-      if (nad && nad.third_tag && nad.trackings) {
-        gnnative_id_$REPLACE_$zoneId$ = Math.floor(Math.random() * 99999);
-        targetWindow.document.write(
-          '<div id ="gnnative_ad' + gnnative_id_$REPLACE_$zoneId$ + '" style="display:none;"></div>'
-        );
-        targetWindow.document.write(nad.third_tag);
-        for (let i = 0, len = nad.trackings.length; i < len; i++) {
-          targetWindow.document.write(nad.trackings[i]);
-        }
-      } else if (nad && (nad.trackings || nad.isnative == 1)) {
-        if (typeof gnnative_id_$REPLACE_$zoneId$ === 'undefined') {
-          gnnative_id_$REPLACE_$zoneId$ = Math.floor(Math.random() * 99999);
-        }
-
-        if (nad.vast_xml && nad.item_format_url && nad.video_player_url) {
-          targetWindow.document.write(
-            '<div id ="gnnative_ad' + gnnative_id_$REPLACE_$zoneId$ + '" style="display:none;"></div>'
-          );
-        } else {
-          return false;
-        }
-
-        const tmpNode = targetWindow.document.getElementById(
-          'gnnative_ad' + gnnative_id_$REPLACE_$zoneId$
-        );
-        if (targetWindow.$GNVPTagRD_$) {
-          const tagRd = new targetWindow.$GNVPTagRD_$(gnnative_id_$REPLACE_$zoneId$, tmpNode);
-          tagRd.render(nad);
-        } else {
-          const tagRdScript = targetWindow.document.createElement('script');
-          tagRdScript.src = nad.video_renderer_url;
-          tagRdScript.onload = function () {
-            const tagRd = new targetWindow.$GNVPTagRD_$(gnnative_id_$REPLACE_$zoneId$, tmpNode);
-            tagRd.render(nad);
-          };
-
-          tmpNode.parentNode.appendChild(tagRdScript);
-        }
-      } else {
-        return false;
-      }
-    },
-    changeOptoutText: function (item, nad) {
-      if (!nad.optout || !nad.optout.url || !this.targetWindow) {
-        return item;
-      }
-      if (
-        item.indexOf('{optout-text}') === -1 ||
-        item.indexOf('{optout-url}') !== -1
-      ) {
-        return item;
-      }
-      const fn = 'link' + Math.floor(Math.random() * 99999);
-      const ch = "<span onclick='return " + fn + "();' style='cursor: pointer'>{optout-text}</span>";
-      let sc = '';
-      sc += "<script type='text/javascript'>";
-      sc += 'function ' + fn + '(){';
-      sc += "window.open('" + nad.optout.url + "', '_blank');";
-      sc += 'return false;';
-      sc += '}';
-      sc += '</script>';
-      this.targetWindow.document.write(sc);
-      return item.replace(/{optout-text}/g, ch);
-    },
-    postReplace: Function('item', bidParams.native.nativePostReplace), // eslint-disable-line no-new-func
-    addEvent: function (target, type, handler) {
-      if (target.addEventListener) {
-        target.addEventListener(type, handler, false);
-      } else {
-        if (target.attachEvent) {
-          target.attachEvent('on' + type, function (event) {
-            return handler.call(target, event);
-          });
-        }
-      }
-    },
-  };
-  window[toCallbackName(bidParams.zoneId)] = function (gnjson) {
-    const nad = gnjson[String(bidParams.zoneId)];
-    if (nad && Object.prototype.hasOwnProperty.call(nad, 'vast_xml')) {
-      window[toNativeObjectName(bidParams.zoneId)].write_native_video_ad(nad);
-    } else {
-      window[toNativeObjectName(bidParams.zoneId)].write_native_ad(nad);
-    }
-  };
 }
 
 /**
@@ -671,7 +364,6 @@ export const spec = {
   supportedMediaTypes: SUPPORTED_MEDIA_TYPES,
   /**
    * Determines whether or not the given bid request is valid.
-   *
    * @param {BidRequest} bidRequest The bid request params to validate.
    * @return boolean True if this is a valid bid request, and false otherwise.
    */
@@ -709,17 +401,12 @@ export const spec = {
 
     validBidRequests.forEach((bid) => {
       // const isNative = bid.mediaTypes?.native;
-      const isNative = bid.params.hasOwnProperty('native');
       const geparameter = bid.params?.geparams || {};
 
       serverRequests.push({
         method: 'GET',
-        url: isNative ? NATIVE_ENDPOINT : BANNER_ENDPOINT,
-        data: utils.parseQueryStringParameters(
-          isNative
-            ? makeNativeRequestData(bid, geparameter, bidderRequest?.refererInfo)
-            : makeBannerRequestData(bid, geparameter, bidderRequest?.refererInfo)
-        ),
+        url: BANNER_ENDPOINT,
+        data: utils.parseQueryStringParameters(makeBannerRequestData(bid, geparameter, bidderRequest?.refererInfo)),
         bid: bid,
       });
     });
@@ -744,23 +431,11 @@ export const spec = {
 
     const zoneId = request.bid.params.zoneId;
     let successBid;
-    if (request.url === BANNER_ENDPOINT) {
-      successBid = serverResponse.body || {};
-    } else if (request.url === NATIVE_ENDPOINT) {
-      defineGnnativeWindow(request.bid.params, request.bid.adUnitCode);
-      const gnnativeCallbackName = toCallbackName(zoneId);
-      // Since the response is not JSON but JSONP, the callback function is written with JSON as an argument, so extract the JSON argument
-      const gnjson = JSON.parse(serverResponse.body.replace(new RegExp(gnnativeCallbackName + '\\((.*)\\);'), '$1'));
-      successBid = gnjson || {};
-    }
+    successBid = serverResponse.body || {};
 
     if (successBid.hasOwnProperty(zoneId)) {
       const bid = successBid[zoneId];
-      bidResponses.push(
-        bid.hasOwnProperty('title')
-          ? makeNativeBidResponse(bid, request, serverResponse.body)
-          : makeBannerBidResponse(bid, request)
-      );
+      bidResponses.push(makeBannerBidResponse(bid, request));
     }
     return bidResponses;
   },
