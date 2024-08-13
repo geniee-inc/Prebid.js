@@ -145,7 +145,7 @@ function makeCommonRequestData(bid, geparameter, refererInfo) {
     ua: navigator.userAgent,
     tpaf: 1,
     cks: 1,
-    ib: bid.params.invalidImpBeacon === true ? 0 : 1,
+    ib: 0,
   };
 
   try {

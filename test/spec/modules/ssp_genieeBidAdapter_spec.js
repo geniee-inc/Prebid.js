@@ -186,7 +186,7 @@ describe('ssp_genieeBidAdapter', function () {
           },
         ]);
         expect(request[0].data).to.have.string('&ib=0&');
-        expect(request[1].data).to.have.string('&ib=1&');
+        expect(request[1].data).to.have.string('&ib=0&');
       });
 
       it('should not sets the value of the adtk query when geparams.lat does not exist', function () {
