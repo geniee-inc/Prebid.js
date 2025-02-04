@@ -341,9 +341,9 @@ export const spec = {
   isBidRequestValid: function (bidRequest) {
     const adFrame = document.querySelector('iframe#ad-slot-1');
     function adClose () {
-      this.style.display = 'none';
       adFrame.style.display = 'none';
     };
+    const closeButtonSize = 44;
     const intervalId = setInterval(() => {
       if (window.zoneToPrebidFlagInPrepend) {
         if (!adFrame) return;
@@ -354,7 +354,7 @@ export const spec = {
         adFrame.style.webkitTransformOrigin = 'top left';
         adFrame.style.transform = 'scale(' + scale + ')';
         adFrame.style.transformOrigin = 'top left';
-        const closeButtonElement = `<div style="width: 44px; height: 44px; margin: 0px;">
+        const closeButtonElement = `<div style="width: ${closeButtonSize}px; height: ${closeButtonSize}px; margin: 0px;">
                   <svg id="cpt_google_interstitial_close_contents" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
         <g>
           <polygon points="512,52.535 459.467,0.002 256.002,203.462 52.538,0.002 0,52.535 203.47,256.005 0,459.465 52.533,511.998 256.002,308.527 459.467,511.998 512,459.475 308.536,256.005" style="fill:#C6C6C6;stroke:#C6C6C6;stroke-width:10px;"></polygon>
@@ -367,8 +367,10 @@ export const spec = {
         closeButton.style = 'width: 44px; height: 44px;';
         closeButton.innerHTML = closeButtonElement;
         closeButton.onclick = adClose;
-        const parentElement = adFrame.parentNode;
-        parentElement.insertBefore(closeButton, adFrame);
+        const adFrameInnerDocument = adFrame.contentDocument;
+        adFrameInnerDocument.body.appendChild(closeButton);
+        const modifiedFrameHeight = parseFloat(adFrame.style.height) + closeButtonSize;
+        adFrame.style.height = modifiedFrameHeight + 'px';
         clearInterval(intervalId);
       }
     }, 10);
