@@ -348,8 +348,8 @@ export const spec = {
       if (window.zoneToPrebidFlagInPrepend) {
         if (!adFrame) return;
         const frameWidth = adFrame.getBoundingClientRect().width;
-        const windowWidth = window.innerWidth;
-        const scale = windowWidth / frameWidth;
+        const bodyWidth = document.body.getBoundingClientRect().width;
+        const scale = bodyWidth / frameWidth;
         adFrame.style.webkitTransform = 'scale(' + scale + ')';
         adFrame.style.webkitTransformOrigin = 'top left';
         adFrame.style.transform = 'scale(' + scale + ')';
