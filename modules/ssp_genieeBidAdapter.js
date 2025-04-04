@@ -124,6 +124,30 @@ function hasParamsNotBlankString(params, key) {
   );
 }
 
+function getImuid() {
+  const cookieMap = {};
+  try {
+    Object.assign(cookieMap, document.cookie.split('; ').reduce(function (acc, ck) {
+      const keyValue = ck.split('=');
+      acc[keyValue[0]] = keyValue[1];
+      return acc;
+    }, {}));
+  } catch (e) {};
+  const imuid = cookieMap['_im_uid.3929'];
+  return imuid || null;
+}
+
+export const buildExtuidQuery = ({id5, imuId}) => {
+  const params = [
+    ...(id5 ? [`id5:${id5}`] : []),
+    ...(imuId ? [`im:${imuId}`] : []),
+  ];
+
+  const queryString = params.join('\t');
+  if (!queryString) return null;
+  return queryString;
+}
+
 /**
  * making request data be used commonly banner and native
  * @see https://docs.prebid.org/dev-docs/bidder-adaptor.html#location-and-referrers
@@ -215,9 +239,11 @@ function makeCommonRequestData(bid, geparameter, refererInfo) {
     }
   }
 
-  // imuid
-  const imuidQuery = getImuidAsQueryParameter(bid);
-  if (imuidQuery) data.extuid = imuidQuery;
+  // ${key1}:${value1}\t${key2}:${value2}
+  const id5 = utils.deepAccess(bid, 'userId.id5id.uid');
+  const imuId = getImuid();
+  const extuidQuery = buildExtuidQuery({id5, imuId});
+  if (extuidQuery) data.extuid = extuidQuery;
 
   // makeUAQuery
   // To avoid double encoding, not using encodeURIComponent here
@@ -309,14 +335,6 @@ function makeChangeHeightEventMarkup(request) {
  */
 function makeBidResponseAd(innerHTML) {
   return '<body marginwidth="0" marginheight="0">' + innerHTML + '</body>';
-}
-
-/**
- * return imuid strings as query parameters
- */
-function getImuidAsQueryParameter(bid) {
-  const imuid = utils.deepAccess(bid, 'userId.imuid');
-  return imuid ? 'im:' + imuid : ''; // To avoid double encoding, not using encodeURIComponent here
 }
 
 function getUserAgent() {
