@@ -7,12 +7,8 @@ export function render({ad, adUrl, width, height}, {mkFrame}, win) {
       message: 'Missing ad markup or URL'
     };
   } else {
-    if (height == null) {
-      const body = win.document?.body;
-      [body, body?.parentElement].filter(elm => elm?.style != null).forEach(elm => elm.style.height = '100%');
-    }
     const doc = win.document;
-    const attrs = {width: width ?? '100%', height: height ?? '100%'};
+    const attrs = {width, height};
     if (adUrl && !ad) {
       attrs.src = adUrl;
     } else {

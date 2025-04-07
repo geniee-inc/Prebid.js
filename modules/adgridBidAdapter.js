@@ -21,7 +21,7 @@ function isBidRequestValid(bid) {
     return false;
   }
 
-  return !!bid.params.domainId && !!bid.params.placement;
+  return !!bid.params.domainId;
 }
 
 /**
@@ -160,7 +160,6 @@ function getBidData(bid) {
     deviceUa: bid.ortb2?.device?.ua,
     domain: bid.ortb2?.site?.publisher?.domain,
     domainId: bid.params.domainId,
-    placement: bid.params.placement,
     code: bid.adUnitCode
   };
 
@@ -179,28 +178,12 @@ function getBidData(bid) {
   return bidData;
 }
 
-/**
- * Register the user sync pixels/iframe which should be dropped after the auction.
- */
-function getUserSyncs(syncOptions, response, gdprConsent, uspConsent) {
-  if (typeof response !== 'object' || response === null || response.length === 0) {
-    return [];
-  }
-
-  if (response[0]?.body?.ext?.cookies && typeof response[0].body.ext.cookies === 'object') {
-    return response[0].body.ext.cookies.slice(0, 5);
-  } else {
-    return [];
-  }
-};
-
 export const spec = {
   code: BIDDER.CODE,
   isBidRequestValid,
   buildRequests,
   interpretResponse,
-  supportedMediaTypes: BIDDER.SUPPORTED_MEDIA_TYPES,
-  getUserSyncs
+  supportedMediaTypes: BIDDER.SUPPORTED_MEDIA_TYPES
 };
 
 registerBidder(spec);

@@ -313,14 +313,13 @@ export const setBidRequestsData = timedAuctionHook('rtd', function setBidRequest
     return exitHook();
   }
 
-  const timeout = shouldDelayAuction ? _moduleConfig.auctionDelay : 0;
-  waitTimeout = setTimeout(exitHook, timeout);
+  waitTimeout = setTimeout(exitHook, shouldDelayAuction ? _moduleConfig.auctionDelay : 0);
 
   relevantSubModules.forEach(sm => {
     const fpdGuard = guardOrtb2Fragments(reqBidsConfigObj.ortb2Fragments || {}, activityParams(MODULE_TYPE_RTD, sm.name));
     verifiers.push(fpdGuard.verify);
     reqBidsConfigObj.ortb2Fragments = fpdGuard.obj;
-    sm.getBidRequestData(reqBidsConfigObj, onGetBidRequestDataCallback.bind(sm), sm.config, _userConsent, timeout);
+    sm.getBidRequestData(reqBidsConfigObj, onGetBidRequestDataCallback.bind(sm), sm.config, _userConsent)
   });
 
   function onGetBidRequestDataCallback() {

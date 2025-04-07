@@ -381,7 +381,7 @@ describe('FTRACK ID System', () => {
     });
 
     describe('pbjs.getUserIds()', () => {
-      it('should return the IDs in the correct schema', async () => {
+      it('should return the IDs in the correct schema', () => {
         config.setConfig({
           userSync: {
             auctionDelay: 10,
@@ -401,8 +401,6 @@ describe('FTRACK ID System', () => {
           }
         });
 
-        await getGlobal().getUserIdsAsync();
-
         expect(getGlobal().getUserIds()).to.deep.equal({
           ftrackId: {
             uid: 'device_test_id',
@@ -417,7 +415,7 @@ describe('FTRACK ID System', () => {
     });
 
     describe('pbjs.getUserIdsAsEids()', () => {
-      it('should return the correct EIDs schema ', async () => {
+      it('should return the correct EIDs schema ', () => {
         // Pass all three IDs
         config.setConfig({
           userSync: {
@@ -438,8 +436,6 @@ describe('FTRACK ID System', () => {
           }
         });
 
-        await getGlobal().getUserIdsAsync();
-
         expect(getGlobal().getUserIdsAsEids()).to.deep.equal([{
           source: 'flashtalking.com',
           uids: [{
@@ -455,7 +451,7 @@ describe('FTRACK ID System', () => {
       });
 
       describe('by ID type:', () => {
-        it('- DeviceID', async () => {
+        it('- DeviceID', () => {
           // Pass DeviceID only
           config.setConfig({
             userSync: {
@@ -474,8 +470,6 @@ describe('FTRACK ID System', () => {
             }
           });
 
-          await getGlobal().getUserIdsAsync();
-
           expect(getGlobal().getUserIdsAsEids()).to.deep.equal([{
             source: 'flashtalking.com',
             uids: [{
@@ -488,7 +482,7 @@ describe('FTRACK ID System', () => {
           }]);
         });
 
-        it('- HHID', async () => {
+        it('- HHID', () => {
           // Pass HHID only
           config.setConfig({
             userSync: {
@@ -507,8 +501,6 @@ describe('FTRACK ID System', () => {
             }
           });
 
-          await getGlobal().getUserIdsAsync();
-
           expect(getGlobal().getUserIdsAsEids()).to.deep.equal([{
             source: 'flashtalking.com',
             uids: [{
@@ -521,7 +513,7 @@ describe('FTRACK ID System', () => {
           }]);
         });
 
-        it('- SingleDeviceID', async () => {
+        it('- SingleDeviceID', () => {
           // Pass SingleDeviceID only
           config.setConfig({
             userSync: {
@@ -539,8 +531,6 @@ describe('FTRACK ID System', () => {
               }]
             }
           });
-
-          await getGlobal().getUserIdsAsync();
 
           expect(getGlobal().getUserIdsAsEids()).to.deep.equal([{
             source: 'flashtalking.com',

@@ -100,9 +100,7 @@ export const spec = {
       };
 
       if (bidRequests[0].schain) {
-        postBody.source = {
-          ext: { schain: bidRequests[0].schain }
-        };
+        postBody.schain = bidRequests[0].schain;
       }
 
       const params = bid.params;

@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { spec, checkVideoPlacement, _getDomainFromURL, assignDealTier, prepareMetaObject, getDeviceConnectionType, setIBVField, setTTL, cpmAdjustment } from 'modules/pubmaticBidAdapter.js';
+import { spec, checkVideoPlacement, _getDomainFromURL, assignDealTier, prepareMetaObject, getDeviceConnectionType, setIBVField, setTTL } from 'modules/pubmaticBidAdapter.js';
 import * as utils from 'src/utils.js';
 import { config } from 'src/config.js';
 import { createEidsArray } from 'modules/userId/eids.js';
@@ -141,12 +141,6 @@ describe('PubMatic adapter', function () {
           wiid: '1234567890',
           profId: '100',
           verId: '200'
-        },
-        mediaTypes: {
-          banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-          }
         }
       },
       {
@@ -1493,13 +1487,7 @@ describe('PubMatic adapter', function () {
             bidId: '23acc48ad47af5',
             requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
             bidderRequestId: '1c56ad30b9b8ca8',
-            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-            mediaTypes: {
-              banner: {
-				  sizes: [[728, 90], [160, 600]],
-				  pos: 1
-              }
-            }
+            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
           }
         ];
         /* case 1 - size passed in adslot */
@@ -1571,13 +1559,7 @@ describe('PubMatic adapter', function () {
             bidId: '23acc48ad47af5',
             requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
             bidderRequestId: '1c56ad30b9b8ca8',
-            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-            mediaTypes: {
-              banner: {
-				  sizes: [[728, 90], [160, 600]],
-				  pos: 1
-              }
-			  }
+            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
           },
           {
             bidder: 'pubmatic',
@@ -1601,13 +1583,7 @@ describe('PubMatic adapter', function () {
             bidId: '23acc48ad47af5',
             requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
             bidderRequestId: '1c56ad30b9b8ca8',
-            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-            mediaTypes: {
-              banner: {
-				  sizes: [[728, 90], [160, 600]],
-				  pos: 1
-              }
-			  }
+            transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
           }
         ];
 
@@ -1867,13 +1843,7 @@ describe('PubMatic adapter', function () {
                   segments: ['80011026', '80011035']
                 }
               }
-            },
-            mediaTypes: {
-              banner: {
-				  sizes: [[728, 90], [160, 600]],
-				  pos: 1
-              }
-			  }
+            }
           }];
         let key_val_output = 'key1=val1|key2=val2,val3|jw-id=jw_d9J2zcaA|jw-80011026=1|jw-80011035=1'
         let request = spec.buildRequests(bidRequests, {
@@ -2282,30 +2252,6 @@ describe('PubMatic adapter', function () {
           data = data.imp[0];
           expect(data.bidfloor).to.equal(1.5);
         });
-
-        it('should use mediatype specific floor for multiformat request', function() {
-          newRequest[0].params.kadfloor = undefined;
-          let request = spec.buildRequests(newRequest, {
-			  auctionId: 'new-auction-id'
-          });
-          let data = JSON.parse(request.data);
-          data = data.imp[0];
-		  expect(data.bidfloor).to.equal(1.50);
-		  expect(data.native.ext.bidfloor).to.equal(3.50);
-        });
-
-        it('should use delete granular floor if impression level floor is same as granular level', function() {
-          newRequest[0].params.kadfloor = undefined;
-          let request = spec.buildRequests(newRequest, {
-            auctionId: 'new-auction-id'
-          });
-          let data = JSON.parse(request.data);
-          data = data.imp[0];
-          expect(data.bidfloor).to.equal(1.50);
-          expect(data.bidfloorcur).to.equal('USD');
-          expect(data.banner.ext).to.equal(undefined);
-          expect(data.native.ext.bidfloor).to.equal(3.50);
-		  });
 
         it('kadfloor is passed as 3, use kadfloor as it is highest', function() {
           newRequest[0].params.kadfloor = '3.0';// yes, we want it as a string
@@ -3106,13 +3052,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         },
         {
           bidder: 'pubmatic',
@@ -3137,13 +3077,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         }
       ];
 
@@ -3209,13 +3143,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         },
         {
           bidder: 'pubmatic',
@@ -3240,13 +3168,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         }
       ];
 
@@ -3335,13 +3257,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
 		  },
 		  {
           bidder: 'pubmatic',
@@ -3366,13 +3282,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
 		  }
       ];
 
@@ -3450,13 +3360,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         },
         {
           bidder: 'pubmatic',
@@ -3481,13 +3385,7 @@ describe('PubMatic adapter', function () {
           bidId: '23acc48ad47af5',
           requestId: '0fb4905b-9456-4152-86be-c6f6d259ba99',
           bidderRequestId: '1c56ad30b9b8ca8',
-          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729',
-		  mediaTypes: {
-            banner: {
-			  sizes: [[728, 90], [160, 600]],
-			  pos: 1
-            }
-		  }
+          transactionId: '92489f71-1bf2-49a0-adf9-000cea934729'
         }
       ];
 
@@ -4220,48 +4118,6 @@ describe('PubMatic adapter', function () {
           expect(result).to.deep.equal([{
             type: 'image', url: `${syncurl_image}&gpp=${encodeURIComponent(gppConsent.gppString)}&gpp_sid=${encodeURIComponent(gppConsent.applicableSections)}`
           }]);
-        });
-      });
-    });
-
-    describe('onBidWon', () => {
-      beforeEach(() => {
-        global.cpmAdjustment = {};
-      });
-
-      it('should do nothing if bid is undefined', () => {
-        spec.onBidWon(undefined);
-        expect(global.cpmAdjustment).to.deep.equal({});
-      });
-
-      it('should do nothing if bid is null', () => {
-        spec.onBidWon(null);
-        expect(global.cpmAdjustment).to.deep.equal({});
-      });
-      it('should call _calculateBidCpmAdjustment and update cpmAdjustment correctly', () => {
-        const bid = {
-          cpm: 2.5,
-          originalCpm: 3,
-          originalCurrency: 'USD',
-          currency: 'USD',
-          mediaType: 'banner',
-          meta: { mediaType: 'banner' }
-        };
-
-        spec.onBidWon(bid);
-
-        expect(cpmAdjustment).to.deep.equal({
-          currency: 'USD',
-          originalCurrency: 'USD',
-          adjustment: [
-            {
-              cpmAdjustment: Number(((3 - 2.5) / 3).toFixed(2)), // Expected: 0.17
-              mediaType: 'banner',
-              metaMediaType: 'banner',
-              cpm: 2.5,
-              originalCpm: 3
-            }
-          ]
         });
       });
     });

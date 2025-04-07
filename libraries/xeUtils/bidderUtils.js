@@ -43,7 +43,6 @@ export function buildRequests(validBidRequests, bidderRequest, endpoint) {
   const {refererInfo = {}, gdprConsent = {}, uspConsent} = bidderRequest;
   const requests = validBidRequests.map(req => {
     const request = {};
-    request.tmax = bidderRequest.timeout || 0;
     request.bidId = req.bidId;
     request.banner = deepAccess(req, 'mediaTypes.banner');
     request.auctionId = req.ortb2?.source?.tid;
@@ -78,9 +77,13 @@ export function buildRequests(validBidRequests, bidderRequest, endpoint) {
     } else {
       request.userEids = [];
     }
-
-    request.gdprConsent = gdprConsent;
-
+    if (gdprConsent.gdprApplies) {
+      request.gdprApplies = Number(gdprConsent.gdprApplies);
+      request.consentString = gdprConsent.consentString;
+    } else {
+      request.gdprApplies = 0;
+      request.consentString = '';
+    }
     if (uspConsent) {
       request.usPrivacy = uspConsent;
     } else {

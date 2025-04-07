@@ -10,23 +10,22 @@ describe('events', () => {
   });
   afterEach(() => {
     clock.restore();
-    config.resetConfig();
   });
 
-  it('should clear event log using eventHistoryTTL config', async () => {
+  it('should clear event log using eventHistoryTTL config', () => {
     emit('testEvent', {});
     expect(getEvents().length).to.eql(1);
     config.setConfig({eventHistoryTTL: 1});
-    await clock.tick(500);
+    clock.tick(500);
     expect(getEvents().length).to.eql(1);
-    await clock.tick(6000);
+    clock.tick(6000);
     expect(getEvents().length).to.eql(0);
   });
 
-  it('should take history TTL in seconds', async () => {
+  it('should take history TTL in seconds', () => {
     emit('testEvent', {});
     config.setConfig({eventHistoryTTL: 1000});
-    await clock.tick(10000);
+    clock.tick(10000);
     expect(getEvents().length).to.eql(1);
   });
 

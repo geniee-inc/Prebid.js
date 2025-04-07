@@ -1,11 +1,12 @@
- 
-import {spec, storage, VIDEO_RENDERER_URL} from 'modules/tpmnBidAdapter.js';
-import {generateUUID} from '../../../src/utils.js';
-import {expect} from 'chai';
+/* eslint-disable no-tabs */
+import { spec, storage, VIDEO_RENDERER_URL, ADAPTER_VERSION } from 'modules/tpmnBidAdapter.js';
+import { generateUUID } from '../../../src/utils.js';
+import { expect } from 'chai';
 import * as utils from 'src/utils';
 import * as sinon from 'sinon';
 import 'modules/consentManagementTcf.js';
-import {addFPDToBidderRequest} from '../../helpers/fpd.js';
+import {syncAddFPDToBidderRequest} from '../../helpers/fpd.js';
+import {mockGdprConsent} from '../../helpers/consentData.js';
 
 const BIDDER_CODE = 'tpmn';
 const BANNER_BID = {
@@ -171,10 +172,10 @@ describe('tpmnAdapterTests', function () {
   });
 
   describe('buildRequests()', function () {
-    it('should have gdpr data if applicable', async function () {
+    it('should have gdpr data if applicable', function () {
       const bid = utils.deepClone(BANNER_BID);
 
-      const req = await addFPDToBidderRequest(Object.assign({}, BIDDER_REQUEST, {
+      const req = syncAddFPDToBidderRequest(Object.assign({}, BIDDER_REQUEST, {
         gdprConsent: {
           consentString: 'consentString',
           gdprApplies: true,

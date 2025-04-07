@@ -2,8 +2,8 @@ import { getCurrencyFromBidderRequest } from '../libraries/ortb2Utils/currency.j
 import { Renderer } from '../src/Renderer.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, NATIVE, VIDEO } from '../src/mediaTypes.js';
-import { deepAccess, getBidIdParameter, getValue, isArray, logError } from '../src/utils.js';
-import { getUserSyncParams } from '../libraries/userSyncUtils/userSyncUtils.js';
+import { deepAccess, formatQS, getBidIdParameter, getValue, isArray, logError } from '../src/utils.js';
+import {getUserSyncParams} from '../libraries/userSyncUtils/userSyncUtils.js';
 import { interpretNativeAd } from '../libraries/precisoUtils/bidNativeUtils.js';
 
 /**
@@ -12,7 +12,7 @@ import { interpretNativeAd } from '../libraries/precisoUtils/bidNativeUtils.js';
  * @typedef {import('../src/adapters/bidderFactory.js').ServerRequest} ServerRequest
  */
 
-let SYNC_URL = 'https://static.cdn.admatic.com.tr/sync.html';
+let SYNC_URL = '';
 const BIDDER_CODE = 'admatic';
 const RENDERER_URL = 'https://acdn.adnxs.com/video/outstream/ANOutstreamVideo.js';
 
@@ -20,12 +20,12 @@ export const spec = {
   code: BIDDER_CODE,
   gvlid: 1281,
   aliases: [
-    { code: 'admaticde', gvlid: 1281 },
-    { code: 'pixad', gvlid: 1281 },
-    { code: 'monetixads', gvlid: 1281 },
-    { code: 'netaddiction', gvlid: 1281 },
-    { code: 'adt', gvlid: 779 },
-    { code: 'yobee', gvlid: 1281 }
+    {code: 'admaticde', gvlid: 1281},
+    {code: 'pixad', gvlid: 1281},
+    {code: 'monetixads', gvlid: 1281},
+    {code: 'netaddiction', gvlid: 1281},
+    {code: 'adt', gvlid: 779},
+    {code: 'yobee', gvlid: 1281}
   ],
   supportedMediaTypes: [BANNER, VIDEO, NATIVE],
   /**
@@ -125,35 +125,46 @@ export const spec = {
     }
 
     if (payload) {
-      const domain = {};
-      domain.parts = host.split('rtb.');
-      if (domain.parts.length > 1) {
-        domain.url = domain.parts[1];
+      switch (bidderName) {
+        case 'netaddiction':
+          SYNC_URL = 'https://static.cdn.netaddiction.tech/netaddiction/sync.html';
+          break;
+        case 'monetixads':
+          SYNC_URL = 'https://static.cdn.monetixads.com/monetixads/sync.html';
+          break;
+        case 'pixad':
+          SYNC_URL = 'https://static.cdn.pixad.com.tr/sync.html';
+          break;
+        case 'admaticde':
+          SYNC_URL = 'https://static.cdn.admatic.de/admaticde/sync.html';
+          break;
+        case 'adt':
+          SYNC_URL = 'https://static.cdn.adtarget.biz/adt/sync.html';
+          break;
+        case 'yobee':
+          SYNC_URL = 'https://static.cdn.yobee.it/yobee/sync.html';
+          break;
+        case 'admatic':
+        default:
+          SYNC_URL = 'https://static.cdn.admatic.com.tr/sync.html';
+          break;
       }
-      SYNC_URL = `https://static.cdn.${domain.url}/${bidderName}/sync.html`;
 
-      host = host.replace('https://', '').replace('http://', '').replace('/', '');
+      host = host?.replace('https://', '')?.replace('http://', '')?.replace('/', '');
       return { method: 'POST', url: `https://${host}/pb`, data: payload, options: { contentType: 'application/json' } };
     }
   },
 
   getUserSyncs: function (syncOptions, responses, gdprConsent, uspConsent, gppConsent) {
     if (!hasSynced && syncOptions.iframeEnabled) {
-      // Retrieve the sync parameters
-      const params = getUserSyncParams(gdprConsent, uspConsent, gppConsent);
-
-      // Create a URL object from SYNC_URL
-      const urlObj = new URL(SYNC_URL);
-
-      // Append each parameter from the params object to the URL's search parameters
-      Object.keys(params).forEach(key => {
-        urlObj.searchParams.append(key, params[key]);
-      });
+      // data is only assigned if params are available to pass to syncEndpoint
+      let params = getUserSyncParams(gdprConsent, uspConsent, gppConsent);
+      params = Object.keys(params).length ? `&${formatQS(params)}` : '';
 
       hasSynced = true;
       return {
         type: 'iframe',
-        url: urlObj.toString()
+        url: SYNC_URL + params
       };
     }
   },
@@ -255,7 +266,7 @@ function isUrl(str) {
   }
 };
 
-function outstreamRender(bid) {
+function outstreamRender (bid) {
   bid.renderer.push(() => {
     window.ANOutstreamVideo.renderAd({
       targetId: bid.adUnitCode,
@@ -352,7 +363,7 @@ function buildRequestObject(bid) {
   }
   if (bid.mediaTypes?.native) {
     reqObj.type = 'native';
-    reqObj.size = [{ w: 1, h: 1 }];
+    reqObj.size = [{w: 1, h: 1}];
     reqObj.mediatype = bid.mediaTypes.native;
   }
 
@@ -380,7 +391,7 @@ function concatSizes(bid) {
   if (isArray(bannerSizes) || isArray(playerSize) || isArray(videoSizes)) {
     let mediaTypesSizes = [bannerSizes, videoSizes, nativeSizes, playerSize];
     return mediaTypesSizes
-      .reduce(function (acc, currSize) {
+      .reduce(function(acc, currSize) {
         if (isArray(currSize)) {
           if (isArray(currSize[0])) {
             currSize.forEach(function (childSize) {

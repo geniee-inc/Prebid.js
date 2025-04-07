@@ -117,7 +117,6 @@ describe('SharedId System', function () {
           }]
         }
       });
-      await getGlobal().getUserIdsAsync();
       const eids = getGlobal().getUserIdsAsEids();
       sinon.assert.match(eids[0], {
         source: 'pubcid.org',

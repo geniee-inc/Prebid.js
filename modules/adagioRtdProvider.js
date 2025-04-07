@@ -28,7 +28,6 @@ import {
 } from '../src/utils.js';
 import { _ADAGIO, getBestWindowForAdagio } from '../libraries/adagioUtils/adagioUtils.js';
 import { getGptSlotInfoForAdUnitCode } from '../libraries/gptUtils/gptUtils.js';
-import { getBoundingClientRect } from '../libraries/boundingClientRect/boundingClientRect.js';
 
 /**
  * @typedef {import('../modules/rtdModule/index.js').RtdSubmodule} RtdSubmodule
@@ -470,8 +469,8 @@ function getElementFromTopWindow(element, currentWindow) {
       return element;
     } else {
       const frame = currentWindow.frameElement;
-      const frameClientRect = getBoundingClientRect(frame);
-      const elementClientRect = getBoundingClientRect(element);
+      const frameClientRect = frame.getBoundingClientRect();
+      const elementClientRect = element.getBoundingClientRect();
 
       if (frameClientRect.width !== elementClientRect.width || frameClientRect.height !== elementClientRect.height) {
         return false;
@@ -521,7 +520,7 @@ function getSlotPosition(divId) {
         return '';
       }
 
-      let box = getBoundingClientRect(domElement);
+      let box = domElement.getBoundingClientRect();
 
       const docEl = d.documentElement;
       const body = d.body;
@@ -684,7 +683,7 @@ function registerEventsForAdServers(config) {
   register('apntag', 'anq', ws, 'ast', () => {
     ws.apntag.anq.push(() => {
       AST_EVENTS.forEach(eventName => {
-        ws.apntag.onEvent(eventName, function () {
+        ws.apntag.onEvent(eventName, () => {
           _internal.getAdagioNs().queue.push({
             action: 'ast-event',
             data: { eventName, args: arguments, _window: ws },

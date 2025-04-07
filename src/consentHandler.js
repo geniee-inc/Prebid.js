@@ -1,5 +1,5 @@
 import {cyrb53Hash, isStr, timestamp} from './utils.js';
-import {defer, PbPromise} from './utils/promise.js';
+import {defer, GreedyPromise} from './utils/promise.js';
 import {config} from './config.js';
 
 /**
@@ -68,7 +68,7 @@ export class ConsentHandler {
    */
   get promise() {
     if (this.#ready) {
-      return PbPromise.resolve(this.#data);
+      return GreedyPromise.resolve(this.#data);
     }
     if (!this.#enabled) {
       this.#resolve(null);
@@ -191,7 +191,7 @@ export const coppaDataHandler = (() => {
     getConsentMeta: getCoppa,
     reset() {},
     get promise() {
-      return PbPromise.resolve(getCoppa())
+      return GreedyPromise.resolve(getCoppa())
     },
     get hash() {
       return getCoppa() ? '1' : '0'
@@ -218,7 +218,7 @@ export function multiHandler(handlers = ALL_HANDLERS) {
   return Object.assign(
     {
       get promise() {
-        return PbPromise.all(handlers.map(([name, handler]) => handler.promise.then(val => [name, val])))
+        return GreedyPromise.all(handlers.map(([name, handler]) => handler.promise.then(val => [name, val])))
           .then(entries => Object.fromEntries(entries));
       },
       get hash() {

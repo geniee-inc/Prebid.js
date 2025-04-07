@@ -284,7 +284,9 @@ export const spec = {
             saveOnAllStorages(BUNDLE_COOKIE_NAME, response.bundle, GUID_RETENTION_TIME_HOUR, refererInfo.domain);
           }
 
-          response?.callbacks?.forEach?.(triggerPixel);
+          if (response.callbacks) {
+            response.callbacks.forEach(triggerPixel);
+          }
         }
       }, true);
 

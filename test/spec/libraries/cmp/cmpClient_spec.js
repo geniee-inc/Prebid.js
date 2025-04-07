@@ -112,8 +112,7 @@ describe('cmpClient', () => {
           })
 
           it('rejects when CMP api throws', (done) => {
-            mockApiFn.resetBehavior();
-            mockApiFn.resetHistory();
+            mockApiFn.reset();
             const e = new Error();
             mockApiFn.throws(e);
             mkClient()({}).catch(val => {
@@ -256,8 +255,7 @@ describe('cmpClient', () => {
 
           beforeEach(() => {
             callId = null;
-            messenger.resetHistory();
-            messenger.resetBehavior();
+            messenger.reset();
             messenger.callsFake((msg) => {
               if (msg.mockApiCall) callId = msg.mockApiCall.callId;
             });

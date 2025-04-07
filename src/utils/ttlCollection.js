@@ -1,4 +1,4 @@
-import {PbPromise} from './promise.js';
+import {GreedyPromise} from './promise.js';
 import {binarySearch, logError, timestamp} from '../utils.js';
 import {setFocusTimeout} from './focusTimeout.js';
 
@@ -93,7 +93,7 @@ export function ttlCollection(
       let currentCall;
       return function() {
         const thisCall = currentCall = {};
-        PbPromise.resolve(getter(item)).then((val) => {
+        GreedyPromise.resolve(getter(item)).then((val) => {
           if (thisCall === currentCall) {
             values[field] = val;
             update();

@@ -6,8 +6,7 @@ describe('toOrtb25Strict', () => {
     translator = sinon.stub().callsFake((o) => o);
   })
   it('uses provided translator', () => {
-    translator.resetBehavior();
-    translator.resetHistory();
+    translator.reset();
     translator.callsFake(() => ({id: 'test'}));
     expect(toOrtb25Strict(null, translator)).to.eql({id: 'test'});
   });

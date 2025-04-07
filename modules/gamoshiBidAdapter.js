@@ -17,8 +17,7 @@ import {BANNER, VIDEO} from '../src/mediaTypes.js';
 import {includes} from '../src/polyfill.js';
 
 const ENDPOINTS = {
-  'gamoshi': 'https://rtb.gamoshi.io',
-  'cleanmedianet': 'https://bidder.cleanmediaads.com'
+  'gamoshi': 'https://rtb.gamoshi.io'
 };
 
 const DEFAULT_TTL = 360;
@@ -67,7 +66,7 @@ export const helper = {
 
 export const spec = {
   code: 'gamoshi',
-  aliases: ['gambid', 'cleanmedianet'],
+  aliases: ['gambid', '9MediaOnline'],
   supportedMediaTypes: ['banner', 'video'],
 
   isBidRequestValid: function (bid) {
@@ -82,9 +81,7 @@ export const spec = {
   buildRequests: function (validBidRequests, bidderRequest) {
     return validBidRequests.map(bidRequest => {
       const {adUnitCode, mediaTypes, params, sizes, bidId} = bidRequest;
-
-      const bidderCode = bidderRequest.bidderCode || 'gamoshi';
-      const baseEndpoint = params['rtbEndpoint'] || ENDPOINTS[bidderCode] || 'https://rtb.gamoshi.io';
+      const baseEndpoint = params['rtbEndpoint'] || ENDPOINTS['gamoshi'];
       const rtbEndpoint = `${baseEndpoint}/r/${params.supplyPartnerId}/bidr?rformat=open_rtb&reqformat=rtb_json&bidder=prebid` + (params.query ? '&' + params.query : '');
       const rtbBidRequest = {
         id: bidderRequest.bidderRequestId,

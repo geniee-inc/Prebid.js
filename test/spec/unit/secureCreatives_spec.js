@@ -15,7 +15,6 @@ import {expect} from 'chai';
 
 import {AD_RENDER_FAILED_REASON, BID_STATUS, EVENTS} from 'src/constants.js';
 import {getBidToRender} from '../../../src/adRendering.js';
-import {PUC_MIN_VERSION} from 'src/creativeRenderers.js';
 
 describe('secureCreatives', () => {
   let sandbox;
@@ -299,10 +298,7 @@ describe('secureCreatives', () => {
           data: JSON.stringify({adId: bidId, message: 'Prebid Request'})
         });
         return receive(ev).then(() => {
-          sinon.assert.calledWith(ev.source.postMessage, sinon.match(ob => {
-            const {renderer, rendererVersion} = JSON.parse(ob);
-            return renderer === 'mock-renderer' && rendererVersion === PUC_MIN_VERSION;
-          }));
+          sinon.assert.calledWith(ev.source.postMessage, sinon.match(ob => JSON.parse(ob).renderer === 'mock-renderer'));
         });
       });
 

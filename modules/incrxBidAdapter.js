@@ -1,7 +1,7 @@
 import { parseSizesInput, isEmpty } from '../src/utils.js';
 import { registerBidder } from '../src/adapters/bidderFactory.js';
 import { BANNER, VIDEO } from '../src/mediaTypes.js'
-import { INSTREAM, OUTSTREAM } from '../src/video.js';
+import { OUTSTREAM } from '../src/video.js';
 import { Renderer } from '../src/Renderer.js';
 /**
  * @typedef {import('../src/adapters/bidderFactory.js').BidRequest} BidRequest
@@ -121,9 +121,7 @@ export const spec = {
           break;
         }
       }
-      if (context === INSTREAM) {
-        responseBid.vastUrl = response.ad || '';
-      } else if (context === OUTSTREAM) {
+      if (context === OUTSTREAM) {
         responseBid.vastXml = response.ad || '';
         if (response.rUrl) {
           responseBid.renderer = createRenderer({ ...response, adUnitCode });

@@ -120,10 +120,7 @@ const buildRequests = (validBidRequests, bidderRequest) => {
       sizes = bid.mediaTypes[VIDEO].playerSize;
       adType = VIDEO;
     }
-
-    const parsedSizes = (sizes ? parseSizesInput(sizes) : []).map(size => size.split('x'));
-    const widths = parsedSizes.length ? parsedSizes.map(size => size[0]).join(',') : '0';
-    const heights = parsedSizes.length ? parsedSizes.map(size => size[1]).join(',') : '0';
+    const [w, h] = (parseSizesInput(sizes)[0] || '0x0').split('x');
 
     // TODO: is 'domain' the right value here?
     const hostname = bidderRequest.refererInfo.domain || window.location.hostname;
@@ -150,8 +147,8 @@ const buildRequests = (validBidRequests, bidderRequest) => {
       id: bid.params.id,
       adtype: adType,
       auc: bid.adUnitCode,
-      w: widths,
-      h: heights,
+      w,
+      h,
       pos: parseInt(bid.params.position) || 1,
       ua: navigator.userAgent,
       l: navigator.language && navigator.language.indexOf('-') !== -1 ? navigator.language.split('-')[0] : '',

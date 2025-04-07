@@ -2,7 +2,7 @@ import {config} from './config.js';
 import {klona} from 'klona/json';
 import {includes} from './polyfill.js';
 import {EVENTS} from './constants.js';
-import {PbPromise} from './utils/promise.js';
+import {GreedyPromise} from './utils/promise.js';
 import {getGlobal} from './prebidGlobal.js';
 import { default as deepAccess } from 'dlv/index.js';
 
@@ -443,7 +443,7 @@ export function insertElement(elm, doc, target, asLastChildChild) {
  */
 export function waitForElementToLoad(element, timeout) {
   let timer = null;
-  return new PbPromise((resolve) => {
+  return new GreedyPromise((resolve) => {
     const onLoad = function() {
       element.removeEventListener('load', onLoad);
       element.removeEventListener('error', onLoad);
@@ -746,7 +746,7 @@ export function hasDeviceAccess() {
  * @returns {(boolean|undefined)}
  */
 export function checkCookieSupport() {
-  // eslint-disable-next-line no-restricted-properties
+  // eslint-disable-next-line prebid/no-member
   if (window.navigator.cookieEnabled || !!document.cookie.length) {
     return true;
   }

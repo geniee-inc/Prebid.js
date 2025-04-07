@@ -216,22 +216,6 @@ export function VideojsProvider(providerConfig, vjs_, adState_, timeState_, call
     }
   }
 
-  function setAdXml(vastXml) {
-    if (!player.ima || !vastXml) {
-      return;
-    }
-
-    // The VideoJS IMA plugin version 1.11.0 will throw when the ad is empty.
-    try {
-      player.ima.controller.settings.adsResponse = vastXml;
-      player.ima.requestAds();
-    } catch (e) {
-      /*
-      Handling is not required; ad errors are emitted automatically by video.js
-       */
-    }
-  }
-
   function onEvent(type, callback, payload) {
     registerSetupListeners(type, callback, payload);
 
@@ -517,7 +501,6 @@ export function VideojsProvider(providerConfig, vjs_, adState_, timeState_, call
     getOrtbVideo,
     getOrtbContent,
     setAdTagUrl,
-    setAdXml,
     onEvent,
     offEvent,
     destroy

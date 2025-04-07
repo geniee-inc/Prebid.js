@@ -7,7 +7,7 @@ import * as ajax from 'src/ajax.js';
 import { BANNER, NATIVE, VIDEO } from '../../../src/mediaTypes.js';
 import { hook } from '../../../src/hook';
 import { config } from '../../../src/config.js';
-import { addFPDToBidderRequest } from '../../helpers/fpd';
+import { syncAddFPDToBidderRequest } from '../../helpers/fpd';
 import 'modules/consentManagementTcf.js';
 import 'modules/consentManagementUsp.js';
 import 'modules/consentManagementGpp.js';
@@ -478,7 +478,7 @@ describe('The inmobi bidding adapter', function () {
       },
     };
 
-    it('request should build with correct plc', async function () {
+    it('request should build with correct plc', function () {
       const bidRequests = [
         {
           bidId: 'bidId',
@@ -494,12 +494,12 @@ describe('The inmobi bidding adapter', function () {
           }
         },
       ];
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
       const ortbRequest = request.data;
       expect(ortbRequest.imp[0].ext.bidder.plc).to.deep.equal('123');
     });
 
-    it('request should build with correct imp', async function () {
+    it('request should build with correct imp', function () {
       const expectedMetric = {
         url: 'https://inmobi.com'
       }
@@ -527,7 +527,7 @@ describe('The inmobi bidding adapter', function () {
         }
       }];
 
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.imp).to.have.lengthOf(1);
       expect(ortbRequest.imp[0].id).to.deep.equal('bidId');
       expect(ortbRequest.imp[0].tagid).to.deep.equal('impId');
@@ -540,7 +540,7 @@ describe('The inmobi bidding adapter', function () {
       expect(ortbRequest.imp[0].rwdd).to.equal(1);
     });
 
-    it('request should build with proper site data', async function () {
+    it('request should build with proper site data', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -571,7 +571,7 @@ describe('The inmobi bidding adapter', function () {
           }
         }
       };
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest({...bidderRequest, ortb2})).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest({ ...bidderRequest, ortb2 })).data;
       expect(ortbRequest.site.domain).to.equal('raapchikgames.com');
       expect(ortbRequest.site.publisher.domain).to.equal('inmobi');
       expect(ortbRequest.site.page).to.equal('https://raapchikgames.com');
@@ -585,7 +585,7 @@ describe('The inmobi bidding adapter', function () {
       expect(ortbRequest.site.content.url).to.equal('https://raapchikgames.com/games1')
     });
 
-    it('request should build with proper device data', async function () {
+    it('request should build with proper device data', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -620,7 +620,7 @@ describe('The inmobi bidding adapter', function () {
           }
         }
       };
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest({...bidderRequest, ortb2})).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest({ ...bidderRequest, ortb2 })).data;
       expect(ortbRequest.device.dnt).to.equal(0);
       expect(ortbRequest.device.lmt).to.equal(1);
       expect(ortbRequest.device.js).to.equal(1);
@@ -637,8 +637,8 @@ describe('The inmobi bidding adapter', function () {
       expect(ortbRequest.device.geo.lon).to.deep.equal(-75.3009142);
     });
 
-    it('should properly build a request with source object', async function () {
-      const expectedSchain = {id: 'prebid'};
+    it('should properly build a request with source object', function () {
+      const expectedSchain = { id: 'prebid' };
       const ortb2 = {
         source: {
           pchain: 'inmobi',
@@ -660,12 +660,12 @@ describe('The inmobi bidding adapter', function () {
           },
         },
       ];
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest({...bidderRequest, ortb2})).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest({ ...bidderRequest, ortb2 })).data;
       expect(ortbRequest.source.ext.schain).to.deep.equal(expectedSchain);
       expect(ortbRequest.source.pchain).to.equal('inmobi');
     });
 
-    it('should properly user object', async function () {
+    it('should properly user object', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -706,7 +706,7 @@ describe('The inmobi bidding adapter', function () {
           }
         }
       }
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(br));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(br));
       const ortbRequest = request.data;
       expect(ortbRequest.user.yob).to.deep.equal(2002);
       expect(ortbRequest.user.keyowrds).to.deep.equal('test test');
@@ -725,7 +725,7 @@ describe('The inmobi bidding adapter', function () {
       ]);
     });
 
-    it('should properly build a request regs object', async function () {
+    it('should properly build a request regs object', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -749,14 +749,14 @@ describe('The inmobi bidding adapter', function () {
         }
       };
 
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest({...bidderRequest, ortb2})).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest({ ...bidderRequest, ortb2 })).data;
       expect(ortbRequest.regs.coppa).to.equal(1);
       expect(ortbRequest.regs.ext.gpp).to.equal('gpp_consent_string');
       expect(ortbRequest.regs.ext.gpp_sid).to.deep.equal([0, 1, 2]);
       expect(ortbRequest.regs.ext.us_privacy).to.deep.equal('yes us privacy applied');
     });
 
-    it('gdpr test', async function () {
+    it('gdpr test', function () {
       // using privacy params from global bidder Request
       const bidRequests = [
         {
@@ -772,12 +772,12 @@ describe('The inmobi bidding adapter', function () {
           },
         },
       ];
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.regs.ext.gdpr).to.deep.equal(1);
       expect(ortbRequest.user.ext.consent).to.equal('consentDataString');
     });
 
-    it('should properly set tmax if available', async function () {
+    it('should properly set tmax if available', function () {
       // using tmax from global bidder Request
       const bidRequests = [
         {
@@ -794,12 +794,12 @@ describe('The inmobi bidding adapter', function () {
           }
         },
       ];
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
       const ortbRequest = request.data;
       expect(ortbRequest.tmax).to.equal(bidderRequest.timeout);
     });
 
-    it('should properly build a request with bcat field', async function () {
+    it('should properly build a request with bcat field', function () {
       const bcat = ['IAB1', 'IAB2'];
       const bidRequests = [
         {
@@ -821,11 +821,11 @@ describe('The inmobi bidding adapter', function () {
         }
       };
 
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.bcat).to.deep.equal(bcat);
     });
 
-    it('should properly build a request with badv field', async function () {
+    it('should properly build a request with badv field', function () {
       const badv = ['ford.com'];
       const bidRequests = [
         {
@@ -847,11 +847,11 @@ describe('The inmobi bidding adapter', function () {
         }
       };
 
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.badv).to.deep.equal(badv);
     });
 
-    it('should properly build a request with bapp field', async function () {
+    it('should properly build a request with bapp field', function () {
       const bapp = ['raapchik.com'];
       const bidRequests = [
         {
@@ -873,11 +873,11 @@ describe('The inmobi bidding adapter', function () {
         }
       };
 
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.bapp).to.deep.equal(bapp);
     });
 
-    it('banner request test', async function () {
+    it('banner request test', function () {
       const bidderRequest = {};
       const bidRequests = [
         {
@@ -902,7 +902,7 @@ describe('The inmobi bidding adapter', function () {
           }
         },
       ];
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
       const ortbRequest = request.data;
       expect(ortbRequest.imp[0].banner).not.to.be.null;
       expect(ortbRequest.imp[0].banner.format[0].w).to.equal(320);
@@ -913,7 +913,7 @@ describe('The inmobi bidding adapter', function () {
       expect(ortbRequest.imp[0].banner.mimes).to.deep.equal(['image/jpg', 'image/gif']);
     });
 
-    it('banner request test with sizes > 1', async function () {
+    it('banner request test with sizes > 1', function () {
       const bidderRequest = {};
       const bidRequests = [
         {
@@ -930,7 +930,7 @@ describe('The inmobi bidding adapter', function () {
           }
         },
       ];
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
       const ortbRequest = request.data;
       expect(ortbRequest.imp[0].banner).not.to.be.null;
       expect(ortbRequest.imp[0].banner.format[0].w).to.equal(320);
@@ -940,7 +940,7 @@ describe('The inmobi bidding adapter', function () {
     });
 
     if (FEATURES.VIDEO) {
-      it('video request test', async function () {
+      it('video request test', function () {
         const bidRequests = [
           {
             bidder: 'inmobi',
@@ -979,7 +979,7 @@ describe('The inmobi bidding adapter', function () {
             },
           },
         ];
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
         const ortbRequest = request.data;
         expect(ortbRequest.imp).to.have.lengthOf(1);
         expect(ortbRequest.imp[0].video.skip).to.equal(1);
@@ -1006,7 +1006,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('video request with player size > 1 ', async function () {
+      it('video request with player size > 1 ', function () {
         const bidRequests = [
           {
             bidder: 'inmobi',
@@ -1045,7 +1045,7 @@ describe('The inmobi bidding adapter', function () {
             },
           },
         ];
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
         const ortbRequest = request.data;
         expect(ortbRequest.imp).to.have.lengthOf(1);
         expect(ortbRequest.imp[0].video.w).to.be.equal(640);
@@ -1054,7 +1054,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('video request test when skip is 0', async function () {
+      it('video request test when skip is 0', function () {
         const bidRequests = [
           {
             bidder: 'inmobi',
@@ -1093,7 +1093,7 @@ describe('The inmobi bidding adapter', function () {
             },
           },
         ];
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
         const ortbRequest = request.data;
         expect(ortbRequest.imp).to.have.lengthOf(1);
         expect(ortbRequest.imp[0].video.skip).to.equal(0);
@@ -1101,7 +1101,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.NATIVE) {
-      it('native request test without assests', async function () {
+      it('native request test without assests', function () {
         const bidRequests = [
           {
             mediaTypes: {
@@ -1112,14 +1112,14 @@ describe('The inmobi bidding adapter', function () {
             }
           },
         ];
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
         const ortbRequest = request.data;
         expect(ortbRequest.imp[0].native).to.be.undefined;
       });
     }
 
     if (FEATURES.NATIVE) {
-      it('native request with assets', async function () {
+      it('native request with assets', function () {
         const assets = [{
           required: 1,
           id: 1,
@@ -1154,7 +1154,7 @@ describe('The inmobi bidding adapter', function () {
             params: {}
           },
         ];
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
         const ortbRequest = request.data;
 
         expect(ortbRequest.imp[0].native.request).to.not.be.null;
@@ -1164,30 +1164,30 @@ describe('The inmobi bidding adapter', function () {
       });
     }
 
-    it('should properly build a request when coppa flag is true', async function () {
+    it('should properly build a request when coppa flag is true', function () {
       const bidRequests = [];
       const bidderRequest = {};
-      config.setConfig({coppa: true});
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      config.setConfig({ coppa: true });
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.regs.coppa).to.equal(1);
     });
 
-    it('should properly build a request when coppa flag is false', async function () {
+    it('should properly build a request when coppa flag is false', function () {
       const bidRequests = [];
       const bidderRequest = {};
-      config.setConfig({coppa: false});
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      config.setConfig({ coppa: false });
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.regs.coppa).to.equal(0);
     });
 
-    it('should properly build a request when coppa flag is not defined', async function () {
+    it('should properly build a request when coppa flag is not defined', function () {
       const bidRequests = [];
       const bidderRequest = {};
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.regs?.coppa).to.be.undefined;
     });
 
-    it('build a banner request with bidFloor', async function () {
+    it('build a banner request with bidFloor', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -1204,12 +1204,12 @@ describe('The inmobi bidding adapter', function () {
           }
         }
       ];
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.imp[0].bidfloor).to.deep.equal(1);
       expect(ortbRequest.imp[0].bidfloorcur).to.deep.equal('USD');
     });
 
-    it('build a banner request with getFloor', async function () {
+    it('build a banner request with getFloor', function () {
       const bidRequests = [
         {
           bidder: 'inmobi',
@@ -1223,17 +1223,17 @@ describe('The inmobi bidding adapter', function () {
             plc: '123a'
           },
           getFloor: inputParams => {
-            return {currency: 'USD', floor: 1.23, size: '*', mediaType: '*'};
+            return { currency: 'USD', floor: 1.23, size: '*', mediaType: '*' };
           }
         }
       ];
-      const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+      const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
       expect(ortbRequest.imp[0].bidfloor).equal(1.23);
       expect(ortbRequest.imp[0].bidfloorcur).equal('USD');
     });
 
     if (FEATURES.VIDEO) {
-      it('build a video request with bidFloor', async function () {
+      it('build a video request with bidFloor', function () {
         const bidRequests = [
           {
             bidder: 'inmobi',
@@ -1250,14 +1250,14 @@ describe('The inmobi bidding adapter', function () {
             }
           }
         ];
-        const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+        const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
         expect(ortbRequest.imp[0].bidfloor).to.equal(1);
         expect(ortbRequest.imp[0].bidfloorcur).to.equal('USD');
       });
     }
 
     if (FEATURES.VIDEO) {
-      it('build a video request with getFloor', async function () {
+      it('build a video request with getFloor', function () {
         const bidRequests = [
           {
             bidder: 'inmobi',
@@ -1271,18 +1271,18 @@ describe('The inmobi bidding adapter', function () {
               plc: '123a'
             },
             getFloor: inputParams => {
-              return {currency: 'USD', floor: 1.23, size: '*', mediaType: '*'};
+              return { currency: 'USD', floor: 1.23, size: '*', mediaType: '*' };
             }
           }
         ];
-        const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+        const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
         expect(ortbRequest.imp[0].bidfloor).to.equal(1.23);
         expect(ortbRequest.imp[0].bidfloorcur).to.equal('USD');
       });
     }
 
     if (FEATURES.NATIVE && FEATURES.VIDEO) {
-      it('build a mutli format request with getFloor', async function () {
+      it('build a mutli format request with getFloor', function () {
         const assets = [{
           required: 1,
           id: 1,
@@ -1317,7 +1317,9 @@ describe('The inmobi bidding adapter', function () {
               video: {
                 playerSize: [640, 480],
               },
-              native: {}
+              native: {
+
+              }
             },
             nativeOrtbRequest: {
               assets: assets
@@ -1326,12 +1328,12 @@ describe('The inmobi bidding adapter', function () {
               plc: '12456'
             },
             getFloor: inputParams => {
-              return {currency: 'USD', floor: 1.23, size: '*', mediaType: '*'};
+              return { currency: 'USD', floor: 1.23, size: '*', mediaType: '*' };
             }
           },
         ];
         const bidderRequest = {};
-        const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+        const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
         expect(ortbRequest.imp[0].banner).not.to.be.undefined;
         expect(ortbRequest.imp[0].video).not.to.be.undefined;
         expect(ortbRequest.imp[0].native.request).not.to.be.undefined;
@@ -1341,7 +1343,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('build a multi imp request', async function () {
+      it('build a multi imp request', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1388,7 +1390,7 @@ describe('The inmobi bidding adapter', function () {
             plc: '123',
           }
         }];
-        const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+        const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
         expect(ortbRequest.imp).to.have.lengthOf(2);
         expect(ortbRequest.imp[0].video.skip).to.equal(1);
         expect(ortbRequest.imp[0].video.minduration).to.equal(5);
@@ -1401,7 +1403,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('build a multi format request', async function () {
+      it('build a multi format request', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1440,7 +1442,7 @@ describe('The inmobi bidding adapter', function () {
             plc: '123'
           },
         }];
-        const ortbRequest = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest)).data;
+        const ortbRequest = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest)).data;
         expect(ortbRequest.imp).to.have.lengthOf(1);
         expect(ortbRequest.imp[0].video.skip).to.equal(1);
         expect(ortbRequest.imp[0].video.minduration).to.equal(5);
@@ -1642,23 +1644,23 @@ describe('The inmobi bidding adapter', function () {
       };
     };
 
-    it('returns an empty array when bid response is empty', async function () {
+    it('returns an empty array when bid response is empty', function () {
       const bidRequests = [];
       const response = {};
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
       const bids = spec.interpretResponse(response, request);
       expect(bids).to.have.lengthOf(0);
     });
 
-    it('should return an empty array when there is no bid response', async function () {
+    it('should return an empty array when there is no bid response', function () {
       const bidRequests = [];
-      const response = {seatbid: []};
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-      const bids = spec.interpretResponse({body: response}, request);
+      const response = { seatbid: [] };
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+      const bids = spec.interpretResponse({ body: response }, request);
       expect(bids).to.have.lengthOf(0);
     });
 
-    it('return banner response', async function () {
+    it('return banner response', function () {
       const bidRequests = [{
         adUnitCode: 'impId',
         bidId: 'bidId',
@@ -1672,8 +1674,8 @@ describe('The inmobi bidding adapter', function () {
         }
       }];
       const response = mockResponse('bidId', 1);
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-      const bids = spec.interpretResponse({body: response}, request);
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+      const bids = spec.interpretResponse({ body: response }, request);
       expect(bids).to.have.length(1);
       expect(bids[0].currency).to.deep.equal('USD');
       expect(bids[0].mediaType).to.deep.equal('banner');
@@ -1688,7 +1690,7 @@ describe('The inmobi bidding adapter', function () {
       expect(bids[0].meta.prebid.meta.networkName).to.deep.equal('inmobi');
     });
 
-    it('bid response when banner wins among two ad units', async function () {
+    it('bid response when banner wins among two ad units', function () {
       const bidRequests = [{
         adUnitCode: 'impId',
         bidId: 'bidId',
@@ -1718,8 +1720,8 @@ describe('The inmobi bidding adapter', function () {
         }
       }];
       const response = mockResponse('bidId2', 1);
-      const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-      const bids = spec.interpretResponse({body: response}, request);
+      const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+      const bids = spec.interpretResponse({ body: response }, request);
       expect(bids[0].currency).to.deep.equal('USD');
       expect(bids[0].mediaType).to.deep.equal('banner');
       expect(bids[0].requestId).to.deep.equal('bidId2');
@@ -1734,7 +1736,7 @@ describe('The inmobi bidding adapter', function () {
     });
 
     if (FEATURES.VIDEO) {
-      it('return instream video response', async function () {
+      it('return instream video response', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1753,8 +1755,8 @@ describe('The inmobi bidding adapter', function () {
           },
         }];
         const response = mockResponse('bidId', 2);
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-        const bids = spec.interpretResponse({body: response}, request);
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+        const bids = spec.interpretResponse({ body: response }, request);
         expect(bids).to.have.lengthOf(1);
         expect(bids[0].mediaType).to.equal(VIDEO);
         expect(bids[0].currency).to.deep.equal('USD');
@@ -1773,7 +1775,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('return video outstream response', async function () {
+      it('return video outstream response', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1792,8 +1794,8 @@ describe('The inmobi bidding adapter', function () {
           },
         }];
         const response = mockResponse('bidId', 2);
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-        const bids = spec.interpretResponse({body: response}, request);
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+        const bids = spec.interpretResponse({ body: response }, request);
         expect(bids).to.have.lengthOf(1);
         expect(bids[0].mediaType).to.equal(VIDEO);
         expect(bids[0].currency).to.deep.equal('USD');
@@ -1812,7 +1814,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.VIDEO) {
-      it('bid response when video wins among two ad units', async function () {
+      it('bid response when video wins among two ad units', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1842,8 +1844,8 @@ describe('The inmobi bidding adapter', function () {
           }
         }];
         const response = mockResponse('bidId', 2);
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-        const bids = spec.interpretResponse({body: response}, request);
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+        const bids = spec.interpretResponse({ body: response }, request);
         expect(bids).to.have.lengthOf(1);
         expect(bids[0].mediaType).to.equal(VIDEO);
         expect(bids[0].currency).to.deep.equal('USD');
@@ -1862,7 +1864,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.NATIVE) {
-      it('should correctly parse a native bid response', async function () {
+      it('should correctly parse a native bid response', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1884,8 +1886,8 @@ describe('The inmobi bidding adapter', function () {
         }];
         const response = mockResponseNative('bidId', 4);
         const expectedAdmNativeOrtb = JSON.parse(response.seatbid[0].bid[0].adm).native;
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-        const bids = spec.interpretResponse({body: response}, request);
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+        const bids = spec.interpretResponse({ body: response }, request);
 
         expect(bids).to.have.lengthOf(1);
         expect(bids[0].mediaType).to.equal(NATIVE);
@@ -1906,7 +1908,7 @@ describe('The inmobi bidding adapter', function () {
     }
 
     if (FEATURES.NATIVE) {
-      it('should correctly parse a native bid response when there are two ad units', async function () {
+      it('should correctly parse a native bid response when there are two ad units', function () {
         const bidRequests = [{
           adUnitCode: 'impId',
           bidId: 'bidId',
@@ -1940,8 +1942,8 @@ describe('The inmobi bidding adapter', function () {
         }];
         const response = mockResponseNative('bidId', 4);
         const expectedAdmNativeOrtb = JSON.parse(response.seatbid[0].bid[0].adm).native;
-        const request = spec.buildRequests(bidRequests, await addFPDToBidderRequest(bidderRequest));
-        const bids = spec.interpretResponse({body: response}, request);
+        const request = spec.buildRequests(bidRequests, syncAddFPDToBidderRequest(bidderRequest));
+        const bids = spec.interpretResponse({ body: response }, request);
         expect(bids).to.have.lengthOf(1);
         expect(bids[0].mediaType).to.equal(NATIVE);
         // testing

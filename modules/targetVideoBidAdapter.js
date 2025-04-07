@@ -99,9 +99,7 @@ export const spec = {
             };
 
             if (bidRequests[0].schain) {
-              payload.source = {
-                ext: { schain: bidRequests[0].schain }
-              };
+              payload.schain = bidRequests[0].schain;
             }
 
             requests.push(formatRequest({ payload, url: VIDEO_ENDPOINT_URL, bidId }));

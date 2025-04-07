@@ -23,8 +23,7 @@ var adUnits = [
     bids: [{
       bidder: 'adgrid',
       params: {
-        domainId: 12345,
-        placement: 'leaderboard'
+        domainId: 12345
       }
     }]
   },
@@ -38,8 +37,7 @@ var adUnits = [
     bids: [{
       bidder: 'adgrid',
       params: {
-        domainId: 67890,
-        placement: 'adhesion'
+        domainId: 67890
       }
     }]
   }

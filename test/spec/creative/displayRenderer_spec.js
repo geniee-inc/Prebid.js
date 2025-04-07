@@ -2,7 +2,7 @@ import {render} from 'creative/renderers/display/renderer.js';
 import {ERROR_NO_AD} from '../../../creative/renderers/display/constants.js';
 
 describe('Creative renderer - display', () => {
-  let doc, mkFrame, sendMessage, win;
+  let doc, mkFrame, sendMessage;
   beforeEach(() => {
     mkFrame = sinon.stub().callsFake((doc, attrs) => Object.assign({doc}, attrs));
     sendMessage = sinon.stub();
@@ -11,13 +11,10 @@ describe('Creative renderer - display', () => {
         appendChild: sinon.stub()
       }
     };
-    win = {
-      document: doc
-    }
   });
 
   function runRenderer(data) {
-    return render(data, {sendMessage, mkFrame}, win);
+    return render(data, {sendMessage, mkFrame}, {document: doc});
   }
 
   it('throws when both ad and adUrl are missing', () => {
@@ -54,26 +51,5 @@ describe('Creative renderer - display', () => {
         })
       })
     })
-  })
-
-  it('defaults width and height to 100%', () => {
-    runRenderer({ad: 'mock'});
-    sinon.assert.calledWith(doc.body.appendChild, sinon.match({
-      doc,
-      width: '100%',
-      height: '100%'
-    }))
-  });
-
-  it('sets html and body style height: 100% if no height is provided', () => {
-    Object.assign(doc.body, {
-      style: {},
-      parentElement: {
-        style: {}
-      }
-    })
-    runRenderer({ad: 'mock'});
-    expect(doc.body.style.height).to.eql('100%');
-    expect(doc.body.parentElement.style.height).to.eql('100%');
   })
 })

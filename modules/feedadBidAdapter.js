@@ -90,7 +90,7 @@ const VERSION = '1.0.6';
 
 /**
  * @typedef {object} FeedAdServerResponse
- * @augments ServerResponse
+ * @extends ServerResponse
  * @inner
  *
  * @property {FeedAdApiBidResponse[]} body - the body of a FeedAd server response
