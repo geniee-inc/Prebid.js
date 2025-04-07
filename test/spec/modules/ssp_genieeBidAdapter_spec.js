@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import {
   spec,
   BANNER_ENDPOINT,
-  buildExtuidQuery,
 } from 'modules/ssp_genieeBidAdapter.js';
 import { config } from 'src/config.js';
 
@@ -348,43 +347,15 @@ describe('ssp_genieeBidAdapter', function () {
         expect(request[0].data.apid).to.deep.equal(bundle);
       });
 
-      it('should include only id5id in extuid query when only id5id exists', function () {
-        const id5id = 'id5id';
-        const request = spec.buildRequests([{...BANNER_BID, userId: {id5id: {uid: id5id}}}], DEFAULT_BIDDER_REQUEST);
-        expect(request[0].data).to.have.string(
-          `&extuid=${encodeURIComponent(`id5:${id5id}`)}`
-        );
+      it('should not include the extuid query when bid.userId.imuid does not exist', function () {
+        const request = spec.buildRequests([BANNER_BID]);
+        expect(request[0].data).to.not.have.property('extuid');
       });
 
-      it('should not include the extuid query when it does not contain the imuid cookie', function () {
-        const stub = sinon.stub(document, 'cookie').get(function () {
-          return '';
-        });
-        const request = spec.buildRequests([BANNER_BID], DEFAULT_BIDDER_REQUEST);
-        expect(request[0].data).to.not.have.string('&extuid=');
-        stub.restore();
-      });
-
-      describe('buildExtuidQuery', function() {
-        it('should return tab-separated string when both id5 and imuId exist', function() {
-          const result = buildExtuidQuery({ id5: 'test_id5', imuId: 'test_imu' });
-          expect(result).to.equal('id5:test_id5\tim:test_imu');
-        });
-
-        it('should return only id5 when imuId is missing', function() {
-          const result = buildExtuidQuery({ id5: 'test_id5', imuId: null });
-          expect(result).to.equal('id5:test_id5');
-        });
-
-        it('should return only imuId when id5 is missing', function() {
-          const result = buildExtuidQuery({ id5: null, imuId: 'test_imu' });
-          expect(result).to.equal('im:test_imu');
-        });
-
-        it('should return null when both id5 and imuId are missing', function() {
-          const result = buildExtuidQuery({ id5: null, imuId: null });
-          expect(result).to.be.null;
-        });
+      it('should include an extuid query when bid.userId.imuid exists', function () {
+        const imuid = 'b.a4ad1d3eeb51e600';
+        const request = spec.buildRequests([{...BANNER_BID, userId: {imuid}}]);
+        expect(request[0].data.extuid).to.deep.equal(`im:${imuid}`);
       });
 
       it('should include gpid when ortb2Imp.ext.gpid exists', function () {
