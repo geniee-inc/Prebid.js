@@ -366,24 +366,17 @@ describe('ssp_genieeBidAdapter', function () {
       });
 
       describe('buildExtuidQuery', function() {
-        it('should return tab-separated string when both id5 and imuId exist', function() {
-          const result = buildExtuidQuery({ id5: 'test_id5', imuId: 'test_imu' });
-          expect(result).to.equal('id5:test_id5\tim:test_imu');
-        });
-
-        it('should return only id5 when imuId is missing', function() {
-          const result = buildExtuidQuery({ id5: 'test_id5', imuId: null });
-          expect(result).to.equal('id5:test_id5');
-        });
-
-        it('should return only imuId when id5 is missing', function() {
-          const result = buildExtuidQuery({ id5: null, imuId: 'test_imu' });
-          expect(result).to.equal('im:test_imu');
-        });
-
-        it('should return null when both id5 and imuId are missing', function() {
-          const result = buildExtuidQuery({ id5: null, imuId: null });
-          expect(result).to.be.null;
+        const testCases = [
+          { id5: 'id1', imuId: 'imu1', expected: 'id5:id1\tim:imu1' },
+          { id5: 'id1', imuId: null, expected: 'id5:id1' },
+          { id5: null, imuId: 'imu1', expected: 'im:imu1' },
+          { id5: null, imuId: null, expected: null }
+        ];
+      
+        testCases.forEach(({ id5, imuId, expected }) => {
+          it(`should return ${expected} for id5=${id5}, imuId=${imuId}`, function() {
+            expect(buildExtuidQuery({ id5, imuId })).to.equal(expected);
+          });
         });
       });
 
