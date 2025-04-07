@@ -28,48 +28,58 @@ describe('ssp_genieeBidAdapter', function () {
     return newBid;
   }
 
-  function hasParamsNotBlankStringTestGeparams(param, query) {
-    it(`should set the ${query} query to geparams.${param} when geparams.${param} is neither undefined nor null nor a blank string`, function () {
-      window.geparams[param] = undefined;
-      let request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      window.geparams[param] = null;
-      request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      window.geparams[param] = '';
-      request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      const value = 'hoge';
-      window.geparams[param] = value;
-      request = spec.buildRequests([BANNER_BID]);
-      expect(JSON.stringify(request[0].data)).to.have.string(`"${query}":"${value}"`);
+  describe('Parameter Validation', function() {
+    const testCases = [
+      {
+        type: 'geparams',
+        params: [
+          {param: 'zip', query: 'zip'},
+          {param: 'country', query: 'country'},
+          {param: 'city', query: 'city'},
+          {param: 'long', query: 'long'},
+          {param: 'lati', query: 'lati'}
+        ]
+      },
+      {
+        type: 'gecuparams',
+        params: [
+          {param: 'ver', query: 'gc_ver'},
+          {param: 'minor', query: 'gc_minor'},
+          {param: 'value', query: 'gc_value'}
+        ]
+      }
+    ];
+  
+    testCases.forEach(({type, params}) => {
+      describe(`for ${type}`, function() {
+        params.forEach(({param, query}) => {
+          it(`should handle ${param} parameter correctly`, function() {
+            const target = type === 'geparams' ? window.geparams : window.gecuparams;
+            const testValues = [undefined, null, '', 'testValue'];
+            
+            testValues.forEach(value => {
+              if (type === 'geparams') {
+                window.geparams = {};
+              } else {
+                window.gecuparams = {};
+              }
+  
+              target[param] = value;
+  
+              const request = spec.buildRequests([BANNER_BID]);
+              const dataString = JSON.stringify(request[0].data);
+  
+              if (value && value !== '') {
+                expect(dataString).to.include(`"${query}":"${value}"`);
+              } else {
+                expect(dataString).to.not.include(`"${query}":"`);
+              }
+            });
+          });
+        });
+      });
     });
-  }
-
-  function hasParamsNotBlankStringTestGecuparams(param, query) {
-    it(`should set the ${query} query to gecuparams.${param} when gecuparams.${param} is neither undefined nor null nor a blank string`, function () {
-      window.gecuparams = {};
-      window.gecuparams[param] = undefined;
-      let request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      window.gecuparams[param] = null;
-      request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      window.gecuparams[param] = '';
-      request = spec.buildRequests([BANNER_BID]);
-      expect(request[0].data).to.not.have.property(`"${query}:`);
-
-      const value = 'hoge';
-      window.gecuparams[param] = value;
-      request = spec.buildRequests([BANNER_BID]);
-      expect(JSON.stringify(request[0].data)).to.have.string(`"${query}":"${value}"`);
-    });
-  }
+  });
 
   beforeEach(function () {
     document.documentElement.innerHTML = '';
@@ -79,39 +89,51 @@ describe('ssp_genieeBidAdapter', function () {
   });
 
   describe('isBidRequestValid', function () {
-    it('should return true when params.zoneId exists and params.currency does not exist', function () {
-      expect(spec.isBidRequestValid(BANNER_BID)).to.be.true;
+    const currencyTestCases = [
+      {
+        description: 'no currency specified',
+        config: null,
+        expected: true
+      },
+      {
+        description: 'valid JPY currency',
+        config: { currency: { adServerCurrency: 'JPY' } },
+        expected: true
+      },
+      {
+        description: 'valid USD currency',
+        config: { currency: { adServerCurrency: 'USD' } },
+        expected: true
+      },
+      {
+        description: 'invalid EUR currency',
+        config: { currency: { adServerCurrency: 'EUR' } },
+        expected: false
+      }
+    ];
+  
+    currencyTestCases.forEach(({ description, config, expected }) => {
+      it(`should return ${expected} for ${description}`, function () {
+        if (config) {
+          config.setConfig(config);
+        } else {
+          config.resetConfig();
+        }
+        
+        const bid = config ? 
+          { ...BANNER_BID, params: { ...BANNER_BID.params } } :
+          { ...BANNER_BID };
+          
+        expect(spec.isBidRequestValid(bid)).to.equal(expected);
+      });
     });
-
-    it('should return true when params.zoneId and params.currency exist and params.currency is JPY or USD', function () {
-      config.setConfig({ currency: { adServerCurrency: 'JPY' } });
-      expect(
-        spec.isBidRequestValid({
-          ...BANNER_BID,
-          params: { ...BANNER_BID.params },
-        })
-      ).to.be.true;
-      config.setConfig({ currency: { adServerCurrency: 'USD' } });
-      expect(
-        spec.isBidRequestValid({
-          ...BANNER_BID,
-          params: { ...BANNER_BID.params },
-        })
-      ).to.be.true;
-    });
-
+  
     it('should return false when params.zoneId does not exist', function () {
       expect(spec.isBidRequestValid({ ...BANNER_BID, params: {} })).to.be.false;
     });
-
-    it('should return false when params.zoneId and params.currency exist and params.currency is neither JPY nor USD', function () {
-      config.setConfig({ currency: { adServerCurrency: 'EUR' } });
-      expect(
-        spec.isBidRequestValid({
-          ...BANNER_BID,
-          params: { ...BANNER_BID.params },
-        })
-      ).to.be.false;
+  
+    afterEach(function () {
+      config.resetConfig();
     });
   });
 
@@ -242,28 +264,33 @@ describe('ssp_genieeBidAdapter', function () {
         expect(request[0].data.idfa).to.deep.equal(idfa);
       });
 
-      it('should set the sw query to screen.height and the sh query to screen.width when screen.width is greater than screen.height', function () {
-        const width = 1440;
-        const height = 900;
-        const stub = sinon.stub(window, 'screen').get(function () {
-          return { width: width, height: height };
+      describe('Screen Size Parameters', function() {
+        const testCases = [
+          {
+            description: 'landscape orientation',
+            width: 1440,
+            height: 900,
+            expected: {sw: 900, sh: 1440}
+          },
+          {
+            description: 'portrait orientation',
+            width: 411,
+            height: 731,
+            expected: {sw: 411, sh: 731}
+          }
+        ];
+      
+        testCases.forEach(({description, width, height, expected}) => {
+          it(`should handle ${description}`, function() {
+            const stub = sinon.stub(window, 'screen').get(() => ({ width, height }));
+            const request = spec.buildRequests([BANNER_BID]);
+            
+            expect(request[0].data.sw).to.equal(expected.sw);
+            expect(request[0].data.sh).to.equal(expected.sh);
+            
+            stub.restore();
+          });
         });
-        const request = spec.buildRequests([BANNER_BID]);
-        expect(request[0].data.sw).to.deep.equal(height);
-        expect(request[0].data.sh).to.deep.equal(width);
-        stub.restore();
-      });
-
-      it('should set the sw query to screen.width and the sh query to screen.height when screen.width is not greater than screen.height', function () {
-        const width = 411;
-        const height = 731;
-        const stub = sinon.stub(window, 'screen').get(function () {
-          return { width: width, height: height };
-        });
-        const request = spec.buildRequests([BANNER_BID]);
-        expect(request[0].data.sw).to.deep.equal(width);
-        expect(request[0].data.sh).to.deep.equal(height);
-        stub.restore();
       });
 
       hasParamsNotBlankStringTestGeparams('zip', 'zip');
