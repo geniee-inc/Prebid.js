@@ -369,7 +369,7 @@ export const spec = {
    */
   buildRequests: function (validBidRequests, bidderRequest) {
     const serverRequests = [];
-    console.log('--- CHECK BID DATA ---', validBidRequests);
+
     const HIGH_ENTROPY_HINTS = [
       'architecture',
       'model',
