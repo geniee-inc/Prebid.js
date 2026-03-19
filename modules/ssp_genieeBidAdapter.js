@@ -141,7 +141,7 @@ export const buildExtuidQuery = ({id5, imuId}) => {
  */
 function makeCommonRequestData(bid, geparameter, refererInfo) {
   const gpid = utils.deepAccess(bid, 'ortb2Imp.ext.gpid');
-  const schain = bid.schain || bid?.ortb2?.source?.ext?.schain;
+  const schain = utils.deepAccess(bid, 'ortb2.source.ext.schain');
   const data = {
     zoneid: bid.params.zoneId,
     cb: Math.floor(Math.random() * 99999999999),
