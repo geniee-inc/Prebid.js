@@ -386,6 +386,34 @@ describe('ssp_genieeBidAdapter', function () {
         expect(request[0].data).to.not.have.property('extuid');
       });
 
+      it('should include schain in data when schain exists', function () {
+        const schain = {
+          ver: '1.0',
+          complete: 1,
+          nodes: [{ asi: 'example.com', sid: 'publisher-id', hp: 1 }]
+        };
+        const bidWithSchain = {
+          ...BANNER_BID,
+          ortb2: { source: { ext: { schain } } }
+        };
+        const request = spec.buildRequests([bidWithSchain]);
+        expect(request[0].data.schain).to.equal(JSON.stringify(schain));
+      });
+
+      it('should set schain to empty when schain not exists', function () {
+        const bidWithSchain = {
+          ...BANNER_BID,
+          ortb2: { source: { ext: {} } }
+        };
+        const request = spec.buildRequests([bidWithSchain]);
+        expect(request[0].data.schain).to.equal('');
+      });
+
+      it('should set schain to empty string when ortb2 is missing', function () {
+        const request = spec.buildRequests([BANNER_BID]);
+        expect(request[0].data.schain).to.equal('');
+      });
+
       describe('buildExtuidQuery', function() {
         it('should return tab-separated string when both id5 and imuId exist', function() {
           const result = buildExtuidQuery({ id5: 'test_id5', imuId: 'test_imu' });
